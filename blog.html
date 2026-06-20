@@ -22,6 +22,68 @@
 <div style="padding-left: 128px;">
 <h1>備忘録</h1>
 
+<h2><a href="/2026/06/20/raspi5-auto-decryption-on-luks.html">ラズパイ５のディスク暗号化と自動復号</a></h2>
+2026-06-20
+<p align="center"><img src="/assets/images/box-of-raspi-cm5-and-io-board.jpg" alt="CM5とIOボード" /></p>
+
+<p>前回「<a href="/2026/06/16/raspi5-manual-decryption-on-luks.html">ラズパイ５のディスク暗号化と手動起動</a>」はパスフレーズをキーボードから手動で入力することで起動できるようにした。しかし、これでは毎回パスの入力を行う手間がかかることから、今回はキーファイルを読み込ませることで自動で起動するように行った。USBフラッシュメモリに保存したキーファイルで復号することで、物理キーとして扱えるようにした。</p>
+
+<blockquote>
+  <p><strong>注意</strong> <em>ブロックデバイスは自環境に合わせること</em></p>
+</blockquote>
+
+<p>キーファイルをUSBフラッシュメモリに作成して、新しい鍵として登録する。</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>raspi: <span class="nv">$ </span><span class="nb">sudo mkdir</span> <span class="nt">-p</span> /mnt/usbflash
+raspi: <span class="nv">$ </span><span class="nb">sudo </span>mount /dev/sda1 /mnt/usbflash
+raspi: <span class="nv">$ </span><span class="nb">sudo dd </span><span class="k">if</span><span class="o">=</span>/dev/urandom <span class="nv">of</span><span class="o">=</span>/mnt/usbflash/keyfile <span class="nv">bs</span><span class="o">=</span>512 <span class="nv">count</span><span class="o">=</span>4 <span class="nv">iflag</span><span class="o">=</span>fullblock
+raspi: <span class="nv">$ </span><span class="nb">sudo </span>cryptsetup luksAddKey /dev/mmcblk0p2 /mnt/usbflash/keyfile
+</code></pre></div></div>
+<p>ブート中に復号するスクリプト/etc/initramfs-tools/scripts/init-premount/luks-mount-scriptを作成した。</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/sh</span>
+
+<span class="nv">PREREQ</span><span class="o">=</span><span class="s2">""</span>
+prereqs<span class="o">()</span> <span class="o">{</span>
+  <span class="nb">echo</span> <span class="s2">"</span><span class="nv">$PREREQ</span><span class="s2">"</span>
+<span class="o">}</span>
+
+<span class="k">case</span> <span class="nv">$!</span> <span class="k">in
+  </span>prereqs<span class="p">)</span>
+    prereqs
+    <span class="nb">exit </span>0
+    <span class="p">;;</span>
+<span class="k">esac</span>
+
+<span class="nb">mkdir</span> <span class="nt">-p</span> <span class="s2">"</span><span class="k">${</span><span class="nv">rootmnt</span><span class="k">}</span><span class="s2">/usbflash"</span>
+mount /dev/disk/by-uuid/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx <span class="s2">"</span><span class="k">${</span><span class="nv">rootmnt</span><span class="k">}</span><span class="s2">/usbflash"</span>
+cryptsetup open /dev/disk/by-uuid/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx luks <span class="nt">--key-file</span> <span class="s2">"</span><span class="k">${</span><span class="nv">rootmnt</span><span class="k">}</span><span class="s2">/usbflash/keyfile"</span>
+
+<span class="nb">exit </span>0
+</code></pre></div></div>
+<p>UUIDはlsblkで確認した。</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>raspi: <span class="nv">$ </span>lsblk <span class="nt">-f</span>
+NAME        FSTYPE      FSVER LABEL  UUID                                 FSAVAIL FSUSE% MOUNTPOINTS
+loop0       swap        1                                                                
+sda                                                                                      
+└─sda1      ext4        1.0          xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx                
+mmcblk0                                                                                  
+├─mmcblk0p1 vfat        FAT32 bootfs xxxx-xxxx                               389M    23% /boot/firmware
+└─mmcblk0p2 crypto_LUKS 2            xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx                
+  └─luks    ext4        1.0   rootfs xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  195.2G    10% /
+zram0       swap        1     zram0  xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx                <span class="o">[</span>SWAP]
+</code></pre></div></div>
+<p>initramfsを更新する。</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>raspi: <span class="nv">$ </span><span class="nb">sudo </span>update-initramfs <span class="nt">-u</span> <span class="nt">-k</span> alld
+</code></pre></div></div>
+<p>これで自動で復号されて起動するはずだが、USBフラッシュメモリの認識がスクリプトの実行よりも遅いため失敗することがあった。そのためcmdline.txtに遅延rootdelay=2を追加した。</p>
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gd">-console=serial0,115200 console=tty1 root=/dev/mapper/luks rootfstype=ext4 fsck.repair=yes rootwait cfg80211.ieee80211_regdom=JP
+</span><span class="gi">+console=serial0,115200 console=tty1 root=/dev/mapper/luks rootfstype=ext4 fsck.repair=yes rootwait cfg80211.ieee80211_regdom=JP rootdelay=2
+</span></code></pre></div></div>
+<p>再起動後、自動で起動することが確認できた。USBフラッシュメモリを外すと手動起動と同じ動作となった。</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Please unlock disk luks:
+</code></pre></div></div>
+
+<hr>
+
 <h2><a href="/2026/06/16/raspi5-manual-decryption-on-luks.html">ラズパイ５のディスク暗号化と手動復号</a></h2>
 2026-06-16
 <p align="center"><img src="/assets/images/box-of-raspi-cm5-and-io-board.jpg" alt="CM5とIOボード" /></p>

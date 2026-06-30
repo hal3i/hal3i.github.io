@@ -22,6 +22,20 @@
 <div style="padding-left: 128px;">
 <h1>備忘録</h1>
 
+<h2><a href="/2026/06/30/oracle-cloud-free-tier.html">Oracle Cloud Free Tierを試す</a></h2>
+2026-06-30
+<p>当ページは、<a href="https://docs.github.com/ja/pages">GitHub Pages</a>を利用しているが、静的コンテンツのみしか対応しておらず、動的なコンテンツやデータベースの利用ができない。そこでVPSの利用を考えていたところ、<a href="https://www.oracle.com/jp/cloud/free/">Oracle Cloud Free Tier</a>が無料で提供されていることを思い出し、この際なので試してみることにした。</p>
+
+<p>ドキュメントの<a href="https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier.htm">Oracle Cloud Infrastructure Free Tier</a>を参照したところ、AMDとArmプロセッサーが選べ、合計2 OCPUと12 GB RAM、200 GBのブロックボリュームが無料枠で使えるとのことで、なんとも太っ腹である。デフォルトの最小ボリュームは47 GBで、2インスタンスの構成も可能とのことなので、ひとまず最小構成のAMDインスタンスを1つ構築することにした。</p>
+
+<p>はじめにアカウントを登録したあと<a href="https://docs.oracle.com/en-us/iaas/Content/Compute/tutorials/first-linux-instance/overview.htm">Launching Your First Linux Instance</a>を一読してインスタンスを作成し、過程でダウンロードした秘密鍵を使って簡単にSSH接続することができた。</p>
+
+<p><img src="/assets/images/oracle-cloud-instance.png" alt="Running" /></p>
+
+<p>インフラ関係はあまり詳しくないが勉強できる環境が整ったので少しずつ活用していきたいと思う。</p>
+
+<hr>
+
 <h2><a href="/2026/06/26/learn-programming-rust.html">プログラミングRustを読んで</a></h2>
 2026-06-26
 <p><a href="https://www.oreilly.co.jp/books/9784873119786/"><img src="/assets/images/programming-rust.jpg" alt="programming-rust" /></a></p>

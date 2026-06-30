@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Oracle Cloud Free Tierを試す - ハルのホームページ</title>
+<link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body">
+<div style="position: fixed; width: 128px;">
+<nav>
+<ul>
+
+<li><a href="/">トップ</a>
+
+<li><a href="/blog.html">備忘録</a>
+
+<li><a href="/make.html">制作物</a>
+
+</ul>
+</nav>
+</div>
+<div style="padding-left: 128px;">
+<h1>Oracle Cloud Free Tierを試す</h1>
+<p>
+  2026-06-30
+  
+  
+</p>
+
+<p>当ページは、<a href="https://docs.github.com/ja/pages">GitHub Pages</a>を利用しているが、静的コンテンツのみしか対応しておらず、動的なコンテンツやデータベースの利用ができない。そこでVPSの利用を考えていたところ、<a href="https://www.oracle.com/jp/cloud/free/">Oracle Cloud Free Tier</a>が無料で提供されていることを思い出し、この際なので試してみることにした。</p>
+
+<p>ドキュメントの<a href="https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier.htm">Oracle Cloud Infrastructure Free Tier</a>を参照したところ、AMDとArmプロセッサーが選べ、合計2 OCPUと12 GB RAM、200 GBのブロックボリュームが無料枠で使えるとのことで、なんとも太っ腹である。デフォルトの最小ボリュームは47 GBで、2インスタンスの構成も可能とのことなので、ひとまず最小構成のAMDインスタンスを1つ構築することにした。</p>
+
+<p>はじめにアカウントを登録したあと<a href="https://docs.oracle.com/en-us/iaas/Content/Compute/tutorials/first-linux-instance/overview.htm">Launching Your First Linux Instance</a>を一読してインスタンスを作成し、過程でダウンロードした秘密鍵を使って簡単にSSH接続することができた。</p>
+
+<p><img src="/assets/images/oracle-cloud-instance.png" alt="Running" /></p>
+
+<p>インフラ関係はあまり詳しくないが勉強できる環境が整ったので少しずつ活用していきたいと思う。</p>
+
+</div>
+</body>
+</html>

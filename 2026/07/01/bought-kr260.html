@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>KR260を購入 - ハルのホームページ</title>
+<link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body">
+<div style="position: fixed; width: 128px;">
+<nav>
+<ul>
+
+<li><a href="/">トップ</a>
+
+<li><a href="/blog.html">備忘録</a>
+
+<li><a href="/make.html">制作物</a>
+
+</ul>
+</nav>
+</div>
+<div style="padding-left: 128px;">
+<h1>KR260を購入</h1>
+<p>
+  2026-07-01
+  
+  
+</p>
+
+<p><img src="/assets/images/kr260.jpg" alt="KR260" /></p>
+
+<p>以前、業務で評価したことのあるKR260を個人的に購入した。なぜ購入したかというと、前からFPGAの開発環境がほしかったことと、NASとして10年以上使用していたサーバーをいい加減リプレースしたかったこと、USBが4ポートついているので外付けでRAID1が十分組めるので丁度良いこと、さらに最近のメモリ不足や円安で価格が少しずつ上がっていたこと、などが重なり決断した。Xilinx向けのArm Cortex-m1やRISC-Vのソフトコアも使えるので、いろいろと遊べそうである。</p>
+
+<p>digikeyで購入し、2日程度で到着した。さっそく、<a href="https://ubuntu.com/download/amd#kria-k26">Ubuntu Server 24.04 LTS</a>をダウンロードしてSDカードに書き込む。通常このままだと平文でデータが書き込まれてしまうので、rootfsは暗号化して運用することにする。(暗号化については<a href="/2026/06/16/raspi5-manual-decryption-on-luks.html">ラズパイ５のディスク暗号化と手動起動</a>を参考)</p>
+
+<blockquote>
+  <p><strong>注意</strong> <em>ブロックデバイスは自環境に合わせること</em></p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pc: <span class="nv">$ </span>xzcat iot-limerick-kria-classic-server-2404-classic-24.04-x07-20250423.img.xz | <span class="nb">sudo </span><span class="nv">of</span><span class="o">=</span>/dev/sdb <span class="nv">status</span><span class="o">=</span>progress
+<span class="c"># ここでパーティションツールを使い縮小する。ここでは4 GiBで収まった。</span>
+pc: <span class="nv">$ </span><span class="nb">sudo dd </span><span class="k">if</span><span class="o">=</span>/dev/sdb2 <span class="nv">of</span><span class="o">=</span>kria-rootfs.img <span class="nv">status</span><span class="o">=</span>progress
+<span class="c"># ここでパーティションを最大にする。</span>
+pc: <span class="nv">$ </span><span class="nb">sudo </span>cryptsetup luksFormat /dev/sdb2
+pc: <span class="nv">$ </span><span class="nb">sudo </span>cryptsetup open /dev/sdb2 luks
+pc: <span class="nv">$ </span><span class="nb">sudo dd </span><span class="k">if</span><span class="o">=</span>kria-rootfs.img <span class="nv">of</span><span class="o">=</span>/dev/mapper/luks <span class="nv">status</span><span class="o">=</span>progress
+</code></pre></div></div>
+<p>SDカードをKR260に挿してブートする。初回起動時、復号できないのでbusyboxのシェルが表示される。手動で復号して起動する。</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">(</span>initramfs<span class="o">)</span> cryptsetup open /dev/sda2 luks
+<span class="o">(</span>initramfs<span class="o">)</span> <span class="nb">exit</span>
+</code></pre></div></div>
+<p>起動後、/etc/crypttabに復号できるように設定する。</p>
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gi">+luks /dev/disk/by-uuid/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx none luks,discard
+</span></code></pre></div></div>
+<p>initramfsを更新する。</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>raspi: <span class="nv">$ </span><span class="nb">sudo </span>update-initramfs <span class="nt">-u</span> <span class="nt">-k</span> all
+</code></pre></div></div>
+<p>再起動後、ブート中に暗号化時に設定したパスワードが聞かれるので手動で入力することで起動した。</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Please unlock disk luks:
+</code></pre></div></div>
+
+</div>
+</body>
+</html>

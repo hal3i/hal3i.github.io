@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Ollamaを試す - ハルのホームページ</title>
+<link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body">
+<div style="position: fixed; width: 128px;">
+<nav>
+<ul>
+
+<li><a href="/">トップ</a>
+
+<li><a href="/blog.html">備忘録</a>
+
+<li><a href="/make.html">制作物</a>
+
+</ul>
+</nav>
+</div>
+<div style="padding-left: 128px;">
+<h1>Ollamaを試す</h1>
+<p>
+  2026-09-06
+  
+  
+</p>
+
+<p><img src="/assets/images/ollama-logo.png" alt="ollama-logo" /></p>
+
+<p>自分のパソコンでローカルLLMを手軽に実行できる<a href="https://ollama.com/">Ollama</a>というのがあるそうなので試したみた。<a href="https://docs.ollama.com/">ドキュメント</a>を読むとOllamaをインストールして実行するだけで良いようだ。使用感を試すだけなので提供されているコンテナを利用した。</p>
+
+<p>コンテナを開始する</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman run <span class="nt">-d</span> <span class="nt">-v</span> ollama:/root/.ollama <span class="nt">-p</span> 11434:11434 <span class="nt">--name</span> ollama ollama/ollama
+</code></pre></div></div>
+<p><a href="https://ollama.com/search">利用可能なモデル</a>の中から軽量な<a href="https://ollama.com/library/llama3.2:1b">llama3.2:1b</a>を実行してみる。</p>
+
+<p>モデルの実行</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman <span class="nb">exec</span> <span class="nt">-it</span> ollama ollama run llama3.2:1b
+<span class="o">(</span>省略<span class="o">)</span> 
+<span class="o">&gt;&gt;&gt;</span> こんにちは
+こんにちはです！どういたしまして。何がしたいと思いますか？
+<span class="o">&gt;&gt;&gt;</span> /bye
+</code></pre></div></div>
+<p>1Bパラメータなので複雑なことはできないが、チャットができることを確認できた。他のモデルを試してみれば、どのくらいのパラメータを実用的に使えるか調べられそうだ。<a href="https://docs.ollama.com/cli">CLI Reference</a>を参照すると他のAIエージェントも使えるようだ。</p>
+
+<p>後片付け</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman <span class="nb">exec</span> –it ollama <span class="nb">rm </span>llama3.2:1b
+podman stop ollama
+podman <span class="nb">rm </span>ollama
+</code></pre></div></div>
+
+</div>
+</body>
+</html>

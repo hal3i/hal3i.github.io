@@ -22,6 +22,34 @@
 <div style="padding-left: 128px;">
 <h1>備忘録</h1>
 
+<h2><a href="/2026/09/06/ollama.html">Ollamaを試す</a></h2>
+2026-09-06
+<p><img src="/assets/images/ollama-logo.png" alt="ollama-logo" /></p>
+
+<p>自分のパソコンでローカルLLMを手軽に実行できる<a href="https://ollama.com/">Ollama</a>というのがあるそうなので試したみた。<a href="https://docs.ollama.com/">ドキュメント</a>を読むとOllamaをインストールして実行するだけで良いようだ。使用感を試すだけなので提供されているコンテナを利用した。</p>
+
+<p>コンテナを開始する</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman run <span class="nt">-d</span> <span class="nt">-v</span> ollama:/root/.ollama <span class="nt">-p</span> 11434:11434 <span class="nt">--name</span> ollama ollama/ollama
+</code></pre></div></div>
+<p><a href="https://ollama.com/search">利用可能なモデル</a>の中から軽量な<a href="https://ollama.com/library/llama3.2:1b">llama3.2:1b</a>を実行してみる。</p>
+
+<p>モデルの実行</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman <span class="nb">exec</span> <span class="nt">-it</span> ollama ollama run llama3.2:1b
+<span class="o">(</span>省略<span class="o">)</span> 
+<span class="o">&gt;&gt;&gt;</span> こんにちは
+こんにちはです！どういたしまして。何がしたいと思いますか？
+<span class="o">&gt;&gt;&gt;</span> /bye
+</code></pre></div></div>
+<p>1Bパラメータなので複雑なことはできないが、チャットができることを確認できた。他のモデルを試してみれば、どのくらいのパラメータを実用的に使えるか調べられそうだ。<a href="https://docs.ollama.com/cli">CLI Reference</a>を参照すると他のAIエージェントも使えるようだ。</p>
+
+<p>後片付け</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman <span class="nb">exec</span> –it ollama <span class="nb">rm </span>llama3.2:1b
+podman stop ollama
+podman <span class="nb">rm </span>ollama
+</code></pre></div></div>
+
+<hr>
+
 <h2><a href="/2026/07/20/learn-deeplearning6-llm.html">ゼロから作るDeep Learning 6 LLM編を読んで</a></h2>
 2026-07-20
 <p><a href="https://www.oreilly.co.jp/books/9784814401611/"><img src="/assets/images/deeplearning6-llm.jpg" alt="deeplearning6-llm" /></a></p>

@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>GPUでOllamaを実行する - ハルのホームページ</title>
+<link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body">
+<div style="position: fixed; width: 128px;">
+<nav>
+<ul>
+
+<li><a href="/">トップ</a>
+
+<li><a href="/blog.html">備忘録</a>
+
+<li><a href="/make.html">制作物</a>
+
+</ul>
+</nav>
+</div>
+<div style="padding-left: 128px;">
+<h1>GPUでOllamaを実行する</h1>
+<p>
+  2026-09-23
+  
+  
+</p>
+
+<p>Ollamaを使用すると、CPUで処理されているためか動作が重く感じられる。モデルgemma4:e4bに質問「Why is the sky blue?」をすると、スループットは6.12 tk/sであった。動作状態を確認するとPROCESSOR項目がCPUで、プロセスもGPU 0%となっていた。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;ollama ps
+NAME          ID              SIZE      PROCESSOR    CONTEXT    UNTIL
+gemma4:e4b    c6eb396dbd59    9.4 GB    100% CPU     4096       4 minutes from now
+</code></pre></div></div>
+<p><img src="/assets/images/llama-on-cpu.png" alt="llama-on-cpu" /></p>
+
+<p>CPUではなくGPUで処理できれば、より早くなると思われる。調べてみると、OllamaでもGPU動作可能であったので調査内容を備忘録として残しておく。</p>
+
+<p>実行環境は次の通りである。</p>
+<ul>
+  <li>Windows 11 Pro</li>
+  <li>Intel Core Ultra 7 165H</li>
+  <li>Intel Arc Graphics</li>
+</ul>
+
+<p>Ollamaのバックエンドとして使われる<a href="https://llama.app/">llama.cpp</a>を調べると、Intel GPUをサポートしていることが分かった。どうすれば良いのかとソースコードからビルドしてみたりと、いろいろと試してみたところ、サーバーログに情報があった。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;ollama serve
+...
+level=INFO source=runner.go:405 msg="dropping integrated GPU; to enable, set OLLAMA_IGPU_ENABLE=1" id=0 library=Vulkan compute=0.0 name=Vulkan0 description="Intel(R) Arc(TM) Graphics" pci_id=""
+...
+</code></pre></div></div>
+
+<p>環境変数を設定してOllamaを起動する。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;set OLLAMA_IGPU_ENABLE=1
+&gt;ollama serve
+</code></pre></div></div>
+
+<p>動作状態を確認するとPROCESSOR項目がGPUで、プロセスもGPU 90%台になっていることが確認できた。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;ollama ps
+NAME          ID              SIZE      PROCESSOR    CONTEXT    UNTIL
+gemma4:e4b    c6eb396dbd59    3.5 GB    100% GPU     32768      3 minutes from now
+</code></pre></div></div>
+<p><img src="/assets/images/llama-on-gpu.png" alt="llama-on-gpu" /></p>
+
+<p>同じモデルで質問したところスループットは14.45 tk/sまで上がり2倍以上の改善が見られた。</p>
+
+</div>
+</body>
+</html>
